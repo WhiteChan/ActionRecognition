@@ -103,7 +103,7 @@ except:
 
 # print(model.summary())
 
-train_history = model.fit_generator(train_generator, steps_per_epoch=5500, validation_data=validation_generator, validation_steps=10, epochs=50, verbose=2)
+train_history = model.fit_generator(train_generator, steps_per_epoch=5500, validation_data=validation_generator, validation_steps=10, epochs=50)
 
 model.save_weights("SaveModel/cifarCnnModel.h5")
 print("Saved model to disk")
