@@ -95,6 +95,15 @@ model.add(Dense(101, activation='softmax'))
 
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
+try:
+    model.load_weights("SaveModel/UCF101CNNModel.h5")
+    print("Model loaded successfully! Continuing training model")
+except:
+    print("Failed to load model! Start training a new model")
+
 # print(model.summary())
 
-train_history = model.fit_generator(train_generator, steps_per_epoch=100, validation_data=validation_generator, validation_steps=10, epochs=10)
+train_history = model.fit_generator(train_generator, steps_per_epoch=5500, validation_data=validation_generator, validation_steps=10, epochs=50, verbose=2)
+
+model.save_weights("SaveModel/cifarCnnModel.h5")
+print("Saved model to disk")
