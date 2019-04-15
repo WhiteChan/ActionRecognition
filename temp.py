@@ -98,4 +98,6 @@ model.add(Dense(101, activation='softmax'))
 
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-train_history = model.fit_generator(train_generator, steps_per_epoch=100, validation_data=validation_generator, validation_steps=10, epochs=10)
+print(model.summary())
+
+# train_history = model.fit_generator(train_generator, steps_per_epoch=100, validation_data=validation_generator, validation_steps=10, epochs=10)
