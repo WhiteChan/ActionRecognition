@@ -91,8 +91,6 @@ model.add(Conv2D(filters=32, kernel_size=(5, 5), padding='same', activation = 'r
 model.add(MaxPool2D(pool_size=(2, 2)))
 
 model.add(Flatten())
-
-model.add(Dense(1000, activation='relu'))
 model.add(Dense(500, activation='relu'))
 model.add(Dense(101, activation='softmax'))
 
