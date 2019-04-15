@@ -84,11 +84,12 @@ validation_generator = test_datagen.flow_from_directory(
     class_mode='categorical')
 
 model = Sequential()
-model.add(Conv2D(filters=16, kernel_size=(5, 5), padding='same', input_shape=(299, 299, 3), activation='relu'))
+model.add(Conv2D(filters=8, kernel_size=(5, 5), padding='valid', input_shape=(299, 299, 3), activation='relu'))
 model.add(MaxPool2D(pool_size=(2, 2)))
 
-model.add(Conv2D(filters=32, kernel_size=(5, 5), padding='same', activation = 'relu'))
-model.add(MaxPool2D(pool_size=(2, 2)))
+for _ in range(10):
+    model.add(Conv2D(filters=16, kernel_size=(5, 5), padding='valid', activation = 'relu'))
+    model.add(MaxPool2D(pool_size=(2, 2)))
 
 model.add(Flatten())
 model.add(Dense(101, activation='softmax'))
@@ -103,7 +104,7 @@ except:
 
 # print(model.summary())
 
-train_history = model.fit_generator(train_generator, steps_per_epoch=5500, validation_data=validation_generator, validation_steps=10, epochs=50)
+train_history = model.fit_generator(train_generator, steps_per_epoch=5500, validation_data=validation_generator, validation_steps=10, epochs=10)
 
 model.save_weights("SaveModel/cifarCnnModel.h5")
 print("Saved model to disk")
