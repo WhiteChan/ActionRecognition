@@ -87,7 +87,7 @@ model = Sequential()
 model.add(Conv2D(filters=8, kernel_size=(5, 5), padding='valid', input_shape=(299, 299, 3), activation='relu'))
 model.add(MaxPool2D(pool_size=(2, 2)))
 
-for _ in range(10):
+for _ in range(2):
     model.add(Conv2D(filters=16, kernel_size=(5, 5), padding='valid', activation = 'relu'))
     model.add(MaxPool2D(pool_size=(2, 2)))
 
