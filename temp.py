@@ -51,6 +51,8 @@
 from UCFdata import DataSet 
 import numpy as np 
 from keras.preprocessing.image import ImageDataGenerator
+from keras.models import Sequential
+from keras.layers import Conv2D, Dense, Flatten, Dropout, MaxPool2D
 
 data = DataSet()
 
@@ -80,3 +82,20 @@ validation_generator = test_datagen.flow_from_directory(
     batch_size=32,
     classes=data.classes,
     class_mode='categorical')
+
+model = Sequential()
+model.add(Conv2D(filters=16, kernel_size=(5, 5), padding='same', input_shape=(299, 299, 3), activation='relu'))
+model.add(MaxPool2D(pool_size=(2, 2)))
+
+model.add(Conv2D(filters=32, kernel_size=(5, 5), padding='same', activation = 'relu'))
+model.add(MaxPool2D(pool_size=(2, 2)))
+
+model.add(Flatten())
+
+model.add(Dense(1000, activation='relu'))
+model.add(Dense(500, activation='relu'))
+model.add(Dense(101, activation='softmax'))
+
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+train_history = model.fit_generator(train_generator, steps_per_epoch=100, validation_data=validation_generator, validation_steps=10, epochs=10)
