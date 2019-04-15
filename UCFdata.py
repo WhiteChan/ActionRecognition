@@ -114,7 +114,7 @@ class DataSet():
 
             if sequence is None:
                 print("Can't find sequence. Did you generate them?")
-                raise
+                # raise
 
             if concat:
                 # We want to pass the sequence back as a single array. This
