@@ -78,10 +78,10 @@ with tf.name_scope('CNN_Output_Layer'):
     CNN_Output_Layer = tf.nn.softmax(tf.matmul(D_Hidden, W3) + b3)
 
 with tf.name_scope('Output_Layer'):
-    CNN_Output = tf.placeholder('float', shape=[100, 101], name='y_label')
+    CNN_Output = tf.placeholder('float', shape=[100], name='y_label')
     W4 = weight([100, 101])
     b4 = bias([101])
-    y_predict = tf.nn.softmax(tf.matmul(CNN_Output_Layer, W4) + b4)
+    y_predict = tf.nn.softmax(tf.matmul(CNN_Output, W4) + b4)
 
 with tf.name_scope('optimizer'):
     y_label = tf.placeholder("float", shape=[None, 101], name='y_label')
