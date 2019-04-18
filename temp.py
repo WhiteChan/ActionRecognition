@@ -68,7 +68,7 @@ with tf.name_scope('D_Flat'):
     D_Flat = tf.reshape(C1_Pool, [-1, 614400])
 
 with tf.name_scope('Hidden_Layer'):
-    W2 = weight([61400, 101])
+    W2 = weight([614400, 101])
     b2 = bias([101])
     D_Hidden = tf.nn.relu(tf.matmul(D_Flat, W2) + b2)
 
