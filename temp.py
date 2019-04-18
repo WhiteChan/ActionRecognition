@@ -85,7 +85,7 @@ for i in range(50):
 print(np.shape(train_data))
 
 train_data = np.array(train_data)
-train_data = train_data.reshape([10, 100, 240, 320, 1])
+train_data = train_data.reshape([train_data.shape[0], 100, 240, 320, 1])
 train_label = np.array(train_label)
 train_label_OneHot = np_utils.to_categorical(train_label, num_classes=101)
 
