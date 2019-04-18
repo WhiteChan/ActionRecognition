@@ -6,40 +6,42 @@ import cv2 as cv
 
 data = DataSet()
 
-train_data = []
-train_label = []
 all_labels = range(101)
 
 def read_video_data(cap):
-    data = []
+    video_data = []
     for _ in range(100):
         ret, frame = cap.read()
         if ret:
             frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-            data.append(frame)
+            video_data.append(frame)
         else:
-            data.append(np.zeros(shape=(240, 320)))
-    return data
+            video_data.append(np.zeros(shape=(240, 320)))
+    return video_data
 
 all_labels = range(101)
 
 def load_data_batch(data, all_labels, begin, batch_size):
-    train_data = []
-    train_label = []
+    train_data_load = list()
+    train_label_load = list()
+    print(begin, begin + batch_size)
     for i in range(begin, begin + batch_size):
         filename = 'data/' + data.data[i][0] + '/' + data.data[i][1] + '/' + data.data[i][2] + '.avi'
         cap = cv.VideoCapture(filename)
         if data.data[i][0] == 'train':
-            train_data.append(read_video_data(cap))
-            train_label.append(all_labels[data.classes.index(data.data[i][1])])
+            train_data_load.append(read_video_data(cap))
+            train_label_load.append(all_labels[data.classes.index(data.data[i][1])])
 
-    train_data = np.array(train_data)
-    train_data = train_data.reshape([train_data.shape[0], 100, 240, 320, 1])
-    train_label = np.array(train_label)
-    train_label = np_utils.to_categorical(train_label, num_classes=101)
+    train_data_load = np.array(train_data_load)
+    train_data_load = train_data_load.reshape([train_data_load.shape[0], 100, 240, 320, 1])
+    train_label_load = np.array(train_label_load)
+    train_label_load = np_utils.to_categorical(train_label_load, num_classes=101)
 
-    train_data_norm = train_data / 255.0
-    return train_label, train_data_norm
+    # train_data_norm = train_data / 255.0
+    return train_label_load, train_data_load
+
+train_label, train_data = load_data_batch(data, all_labels, 0, 50)
+train_data = train_data / 255.0
 
 def weight(shape):
     return tf.Variable(tf.truncated_normal(shape, stddev=0.1), name='W')
@@ -78,10 +80,11 @@ with tf.name_scope('CNN_Output_Layer'):
     CNN_Output_Layer = tf.nn.softmax(tf.matmul(D_Hidden, W3) + b3)
 
 with tf.name_scope('Output_Layer'):
-    CNN_Output = tf.placeholder('float', shape=[None, 100], name='CNN_Output')
+    CNN_Output = tf.placeholder('float', shape=[None, 100, 1], name='CNN_Output')
+    img_Output = tf.reshape(CNN_Output, [-1, 100])
     W4 = weight([100, 101])
     b4 = bias([101])
-    y_predict = tf.nn.softmax(tf.matmul(CNN_Output, W4) + b4)
+    y_predict = tf.nn.softmax(tf.matmul(img_Output, W4) + b4)
 
 with tf.name_scope('optimizer'):
     y_label = tf.placeholder("float", shape=[None, 101], name='y_label')
@@ -100,8 +103,6 @@ with tf.Session() as sess:
         for j in range(50):
             output = sess.run(CNN_Output_Layer, feed_dict={x: image_x[j]})
             batch_output.append(output)
-            print(output.shape)
-            print(np.shape(batch_output))
-        batch_output = tf.reshape(batch_output, shape=[-1, 100])
-        acc = sess.run(accuracy, feed_dict={CNN_Output: batch_output, y_label: image_y})
+        loss, acc = sess.run([loss_function, accuracy], feed_dict={CNN_Output: batch_output, y_label: image_y})
+        print('loss = ', loss)
         print('acc = ', acc)
