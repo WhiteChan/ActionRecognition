@@ -38,7 +38,7 @@ def load_data_batch(data, all_labels, begin, batch_size):
     train_label = np.array(train_label)
     train_label = np_utils.to_categorical(train_label, num_classes=101)
 
-    train_data_norm = train_data / 255.
+    train_data_norm = train_data / 255.0
     return train_label, train_data_norm
 
 def weight(shape):
@@ -53,7 +53,7 @@ def conv2d(x, W):
 def max_pool_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
-x = tf.placeholder("float", shape=[100, 240, 320, 1], name='x')
+x = tf.placeholder("float", shape=[None, 240, 320, 1], name='x')
 
 with tf.name_scope('C1_Conv'):
     W1 = weight([5, 5, 1, 16])
@@ -65,15 +65,15 @@ with tf.name_scope('C1_Pool'):
     C1_Pool = max_pool_2x2(C1_Conv)
 
 with tf.name_scope('D_Flat'):
-    D_Flat = tf.reshape(C1_Pool, [-1, 614400])
+    D_Flat = tf.reshape(C1_Pool, [-1, 307200])
 
 with tf.name_scope('Hidden_Layer'):
-    W2 = weight([614400, 101])
-    b2 = bias([101])
+    W2 = weight([307200, 100])
+    b2 = bias([100])
     D_Hidden = tf.nn.relu(tf.matmul(D_Flat, W2) + b2)
 
 with tf.name_scope('CNN_Output_Layer'):
-    W3 = weight([101, 1])
+    W3 = weight([100, 1])
     b3 = bias([1])
     CNN_Output_Layer = tf.nn.softmax(tf.matmul(D_Hidden, W3) + b3)
 
@@ -100,5 +100,8 @@ with tf.Session() as sess:
         for j in range(50):
             output = sess.run(CNN_Output_Layer, feed_dict={x: image_x[j]})
             batch_output.append(output)
+            print(output.shape)
+            print(np.shape(batch_output))
+        batch_output = tf.reshape(batch_output, shape=[-1, 100])
         acc = sess.run(accuracy, feed_dict={CNN_Output: batch_output, y_label: image_y})
         print('acc = ', acc)
