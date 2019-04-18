@@ -88,7 +88,6 @@ train_label_OneHot = np_utils.to_categorical(train_label, num_classes=101)
 model = Sequential()
 model.add(Conv3D(filters=4, kernel_size=[3, 3, 3], input_shape=(3, 100, 240, 320), activation='relu'))
 model.add(Flatten())
-model.add(Dense(units=200, activation='relu'))
 model.add(Dense(units=101, activation='softmax'))
 
 print(model.summary())
