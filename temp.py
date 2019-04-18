@@ -24,7 +24,6 @@ all_labels = range(101)
 def load_data_batch(data, all_labels, begin, batch_size):
     train_data_load = list()
     train_label_load = list()
-    print(begin, begin + batch_size)
     for i in range(begin, begin + batch_size):
         filename = 'data/' + data.data[i][0] + '/' + data.data[i][1] + '/' + data.data[i][2] + '.avi'
         cap = cv.VideoCapture(filename)
@@ -94,13 +93,14 @@ with tf.name_scope('evaluate_model'):
 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
-    for i in range(10):
-        image_y, image_x = load_data_batch(data, all_labels, i * 50, 50)
-        image_x = image_x / 255.
-        batch_output = []
-        for j in range(50):
-            output = sess.run(CNN_Output_Layer, feed_dict={x: image_x[j]})
-            batch_output.append(output)
-        loss, acc = sess.run([loss_function, accuracy], feed_dict={CNN_Output: batch_output, y_label: image_y})
-        print('loss = ', loss)
-        print('acc = ', acc)
+    for epoch in range(20):
+        for i in range(199):
+            image_y, image_x = load_data_batch(data, all_labels, i * 50, 50)
+            image_x = image_x / 255.
+            batch_output = []
+            for j in range(50):
+                output = sess.run(CNN_Output_Layer, feed_dict={x: image_x[j]})
+                batch_output.append(output)
+            loss, acc = sess.run([loss_function, accuracy], feed_dict={CNN_Output: batch_output, y_label: image_y})
+            print('Batch ', i, ',loss = ', loss, ', acc = ', acc)
+        print('Epoch ', epoch)
