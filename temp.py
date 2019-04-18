@@ -96,9 +96,9 @@ model.add(Dense(units=101, activation='softmax'))
 
 print(model.summary())
 
-# model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
-# train_history = model.fit(x=train_data, y=train_label_OneHot, validation_split=0.1, epochs=1)
+train_history = model.fit(x=train_data, y=train_label_OneHot, validation_split=0.1, epochs=1)
 
 # train_datagen = ImageDataGenerator(
 #         rescale=1./255,
