@@ -75,7 +75,7 @@ def read_video_data(cap):
 
 all_labels = range(101)
 
-for i in range(10):
+for i in range(50):
     filename = 'data/' + data.data[i][0] + '/' + data.data[i][1] + '/' + data.data[i][2] + '.avi'
     cap = cv.VideoCapture(filename)
     if data.data[i][0] == 'train':
@@ -98,7 +98,7 @@ print(model.summary())
 
 model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
-train_history = model.fit(x=train_data, y=train_label_OneHot, validation_split=0.1, epochs=1)
+train_history = model.fit(x=train_data, y=train_label_OneHot, validation_split=0.1, epochs=20)
 
 # train_datagen = ImageDataGenerator(
 #         rescale=1./255,
