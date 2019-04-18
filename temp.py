@@ -73,10 +73,10 @@ def read_video_data(cap):
 
 all_labels = range(101)
 
-def load_data_label(data, all_labels, batch_size):
+def load_data_label(data, all_labels, begin, batch_size):
     train_data = []
     train_label = []
-    for i in range(batch_size):
+    for i in range(begin, begin + batch_size):
         filename = 'data/' + data.data[i][0] + '/' + data.data[i][1] + '/' + data.data[i][2] + '.avi'
         cap = cv.VideoCapture(filename)
         if data.data[i][0] == 'train':
@@ -84,14 +84,6 @@ def load_data_label(data, all_labels, batch_size):
             train_label.append(all_labels[data.classes.index(data.data[i][1])])
     return train_data, train_label
 
-train_data, train_label = load_data_label(data, all_labels, 50)
-
-print(np.shape(train_data))
-
-train_data = np.array(train_data)
-train_data = train_data.reshape([train_data.shape[0], 100, 240, 320, 1])
-train_label = np.array(train_label)
-train_label_OneHot = np_utils.to_categorical(train_label, num_classes=101)
 
 model = Sequential()
 model.add(Conv3D(filters=1, kernel_size=[9, 9, 9], strides=[3, 3, 3], input_shape=(100, 240, 320, 1), activation='relu'))
@@ -102,7 +94,15 @@ print(model.summary())
 
 model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
-train_history = model.fit(x=train_data, y=train_label_OneHot, validation_split=0.1, epochs=20)
+for i in range(190):
+    train_data, train_label = load_data_label(data, all_labels, i, 50)
+
+    train_data = np.array(train_data)
+    train_data = train_data.reshape([train_data.shape[0], 100, 240, 320, 1])
+    train_label = np.array(train_label)
+    train_label_OneHot = np_utils.to_categorical(train_label, num_classes=101)
+
+    model.fit(x=train_data, y=train_label_OneHot, validation_split=0.1, epochs=1)
 
 # train_datagen = ImageDataGenerator(
 #         rescale=1./255,
