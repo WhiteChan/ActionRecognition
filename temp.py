@@ -67,9 +67,10 @@ def read_video_data(cap):
     for _ in range(100):
         ret, frame = cap.read()
         if ret:
+            frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             data.append(frame)
         else:
-            data.append(np.zeros(shape=(240, 320, 3)))
+            data.append(np.zeros(shape=(240, 320)))
     return data
 
 all_labels = range(101)
@@ -81,20 +82,23 @@ for i in range(10):
         train_data.append(read_video_data(cap))
         train_label.append(all_labels[data.classes.index(data.data[i][1])])
 
+print(np.shape(train_data))
+
 train_data = np.array(train_data)
+train_data = train_data.reshape([10, 100, 240, 320, 1])
 train_label = np.array(train_label)
 train_label_OneHot = np_utils.to_categorical(train_label, num_classes=101)
 
 model = Sequential()
-model.add(Conv3D(filters=2, kernel_size=[3, 3, 3], input_shape=(100, 240, 320, 3), activation='relu'))
+model.add(Conv3D(filters=1, kernel_size=[9, 9, 9], strides=[3, 3, 3], input_shape=(100, 240, 320, 1), activation='relu'))
 model.add(Flatten())
 model.add(Dense(units=101, activation='softmax'))
 
 print(model.summary())
 
-model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+# model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
-train_history = model.fit(x=train_data, y=train_label_OneHot, validation_split=0.1, epochs=1)
+# train_history = model.fit(x=train_data, y=train_label_OneHot, validation_split=0.1, epochs=1)
 
 # train_datagen = ImageDataGenerator(
 #         rescale=1./255,
