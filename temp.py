@@ -94,6 +94,6 @@ with tf.name_scope('evaluate_model'):
 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
-    for i in range(100):
+    for i in range(10):
         image_y, image_x = load_data_batch(data, all_labels, i * 50, 50)
         output = sess.run(CNN_Output, feed_dict={x: image_x})
