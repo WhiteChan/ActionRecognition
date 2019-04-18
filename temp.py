@@ -58,8 +58,6 @@ import cv2 as cv
 
 data = DataSet()
 
-train_data = []
-train_label = []
 all_labels = range(101)
 
 def read_video_data(cap):
@@ -75,12 +73,18 @@ def read_video_data(cap):
 
 all_labels = range(101)
 
-for i in range(50):
-    filename = 'data/' + data.data[i][0] + '/' + data.data[i][1] + '/' + data.data[i][2] + '.avi'
-    cap = cv.VideoCapture(filename)
-    if data.data[i][0] == 'train':
-        train_data.append(read_video_data(cap))
-        train_label.append(all_labels[data.classes.index(data.data[i][1])])
+def load_data_label(data, all_labels, batch_size):
+    train_data = []
+    train_label = []
+    for i in range(batch_size):
+        filename = 'data/' + data.data[i][0] + '/' + data.data[i][1] + '/' + data.data[i][2] + '.avi'
+        cap = cv.VideoCapture(filename)
+        if data.data[i][0] == 'train':
+            train_data.append(read_video_data(cap))
+            train_label.append(all_labels[data.classes.index(data.data[i][1])])
+    return train_data, train_label
+
+train_data, train_label = load_data_label(data, all_labels, 50)
 
 print(np.shape(train_data))
 
