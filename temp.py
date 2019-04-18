@@ -40,9 +40,6 @@ def load_data_batch(data, all_labels, begin, batch_size):
     # train_data_norm = train_data / 255.0
     return train_label_load, train_data_load
 
-train_label, train_data = load_data_batch(data, all_labels, 0, 50)
-train_data = train_data / 255.0
-
 def weight(shape):
     return tf.Variable(tf.truncated_normal(shape, stddev=0.1), name='W')
 
@@ -99,6 +96,7 @@ with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     for i in range(10):
         image_y, image_x = load_data_batch(data, all_labels, i * 50, 50)
+        image_x = image_x / 255.
         batch_output = []
         for j in range(50):
             output = sess.run(CNN_Output_Layer, feed_dict={x: image_x[j]})
