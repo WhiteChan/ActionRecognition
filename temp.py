@@ -58,6 +58,8 @@ import cv2 as cv
 
 data = DataSet()
 
+train_data = []
+train_label = []
 all_labels = range(101)
 
 def read_video_data(cap):
@@ -73,18 +75,14 @@ def read_video_data(cap):
 
 all_labels = range(101)
 
-def load_data_label(data, all_labels, begin, batch_size):
-    train_data = []
-    train_label = []
-    for i in range(begin, begin + batch_size):
-        filename = 'data/' + data.data[i][0] + '/' + data.data[i][1] + '/' + data.data[i][2] + '.avi'
-        cap = cv.VideoCapture(filename)
-        if data.data[i][0] == 'train':
-            train_data.append(read_video_data(cap))
-            train_label.append(all_labels[data.classes.index(data.data[i][1])])
-    return train_data, train_label
+for i in range(1000):
+    filename = 'data/' + data.data[i][0] + '/' + data.data[i][1] + '/' + data.data[i][2] + '.avi'
+    cap = cv.VideoCapture(filename)
+    if data.data[i][0] == 'train':
+        train_data.append(read_video_data(cap))
+        train_label.append(all_labels[data.classes.index(data.data[i][1])])
 
-train_data, train_label = load_data_label(data, all_labels, 0, 200)
+print(np.shape(train_data))
 
 train_data = np.array(train_data)
 train_data = train_data.reshape([train_data.shape[0], 100, 240, 320, 1])
@@ -100,7 +98,7 @@ print(model.summary())
 
 model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
-model.fit(x=train_data, y=train_label_OneHot, validation_split=0.1, epochs=20)
+train_history = model.fit(x=train_data, y=train_label_OneHot, batch_size=50, validation_split=0.1, epochs=20)
 
 # train_datagen = ImageDataGenerator(
 #         rescale=1./255,
