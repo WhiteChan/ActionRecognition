@@ -1,58 +1,6 @@
-# import csv 
-# import numpy as np 
-# import random
-# import glob
-# import os.path 
-# import pandas as pd 
-# import sys 
-# import operator
-# from processor import process_image
-# from keras.utils import np_utils
-
-# seq_length = 40
-
-# # get data
-# with open('./data/data_file.csv', 'r') as fin:
-#     reader = csv.reader(fin)
-#     data = list(reader)
-# print(np.shape(data))
-
-# # get classes
-# classes = []
-# for item in data:
-#     if item[1] not in classes:
-#         classes.append(item[1])
-
-# classes = sorted(classes)
-
-# # clean data
-# data_clean = []
-# for item in data:
-#     if int(item[3]) >= seq_length and int(item[3]) <= 300 and item[1] in classes:
-#         data_clean.append(item)
-
-# data = data_clean
-# print(np.shape(data))
-
-# # split train test
-# train = []
-# test = []
-# for item in data:
-#     if item[0] == 'train':
-#         train.append(item)
-#     else:
-#         test.append(item)
-
-# print('train shape: ', np.shape(train))
-# print('test shape', np.shape(test))
-# print(train[0])
-# print(test[0])
-
 from UCFdata import DataSet 
 import numpy as np 
-from keras.preprocessing.image import ImageDataGenerator
-from keras.models import Sequential
-from keras.layers import Conv2D, Dense, Flatten, Dropout, MaxPool2D, Conv3D
+import tensorflow as tf 
 from keras.utils import np_utils
 import cv2 as cv 
 
@@ -75,76 +23,77 @@ def read_video_data(cap):
 
 all_labels = range(101)
 
-for i in range(1000):
-    filename = 'data/' + data.data[i][0] + '/' + data.data[i][1] + '/' + data.data[i][2] + '.avi'
-    cap = cv.VideoCapture(filename)
-    if data.data[i][0] == 'train':
-        train_data.append(read_video_data(cap))
-        train_label.append(all_labels[data.classes.index(data.data[i][1])])
+def load_data_batch(data, all_labels, begin, batch_size):
+    train_data = []
+    train_label = []
+    for i in range(begin, begin + batch_size):
+        filename = 'data/' + data.data[i][0] + '/' + data.data[i][1] + '/' + data.data[i][2] + '.avi'
+        cap = cv.VideoCapture(filename)
+        if data.data[i][0] == 'train':
+            train_data.append(read_video_data(cap))
+            train_label.append(all_labels[data.classes.index(data.data[i][1])])
 
-print(np.shape(train_data))
+    train_data = np.array(train_data)
+    train_data = train_data.reshape([train_data.shape[0], 100, 240, 320, 1])
+    train_label = np.array(train_label)
+    train_label = np_utils.to_categorical(train_label, num_classes=101)
 
-train_data = np.array(train_data)
-train_data = train_data.reshape([train_data.shape[0], 100, 240, 320, 1])
-train_label = np.array(train_label)
-train_label_OneHot = np_utils.to_categorical(train_label, num_classes=101)
+    train_data = train_data / 255.
+    return train_label, train_data
 
-model = Sequential()
-model.add(Conv3D(filters=1, kernel_size=[9, 9, 9], strides=[3, 3, 3], input_shape=(100, 240, 320, 1), activation='relu'))
-model.add(Flatten())
-model.add(Dense(units=101, activation='softmax'))
+def weight(shape):
+    return tf.Variable(tf.truncated_normal(shape, stddev=0.1), name='W')
 
-print(model.summary())
+def bias(shape):
+    return tf.Variable(tf.constant(0.1, shape=shape), name='b')
 
-model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+def conv2d(x, W):
+    return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
-train_history = model.fit(x=train_data, y=train_label_OneHot, batch_size=50, validation_split=0.1, epochs=20)
+def max_pool_2x2(x):
+    return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
-# train_datagen = ImageDataGenerator(
-#         rescale=1./255,
-#         shear_range=0.2,
-#         horizontal_flip=True,
-#         rotation_range=10.,
-#         width_shift_range=0.2,
-#         height_shift_range=0.2)
+x = tf.placeholder("float", shape=[100, 240, 320, 1], name='x')
 
-# test_datagen = ImageDataGenerator(rescale=1./255)
+with tf.name_scope('C1_Conv'):
+    W1 = weight([5, 5, 1, 16])
+    b1 = bias([16])
+    Conv1 = conv2d(x, W1) + b1
+    C1_Conv = tf.nn.relu(Conv1)
 
-# train_generator = train_datagen.flow_from_directory(
-#     './data/train/',
-#     target_size=(299, 299),
-#     batch_size=32,
-#     classes=data.classes,
-#     class_mode='categorical')
+with tf.name_scope('C1_Pool'):
+    C1_Pool = max_pool_2x2(C1_Conv)
 
-# validation_generator = test_datagen.flow_from_directory(
-#     './data/test/',
-#     target_size=(299, 299),
-#     batch_size=32,
-#     classes=data.classes,
-#     class_mode='categorical')
+with tf.name_scope('D_Flat'):
+    D_Flat = tf.reshape(C1_Pool, [-1, 614400])
 
-# model = Sequential()
-# model.add(Conv2D(filters=8, kernel_size=(5, 5), padding='valid', input_shape=(299, 299, 3), activation='relu'))
-# model.add(MaxPool2D(pool_size=(2, 2)))
+with tf.name_scope('Hidden_Layer'):
+    W2 = weight([61400, 101])
+    b2 = bias([101])
+    D_Hidden = tf.nn.relu(tf.matmul(D_Flat, W2) + b2)
 
-# model.add(Conv2D(filters=16, kernel_size=(5, 5), padding='valid', activation = 'relu'))
-# model.add(MaxPool2D(pool_size=(2, 2)))
+with tf.name_scope('CNN_Output_Layer'):
+    W3 = weight([101, 1])
+    b3 = bias([1])
+    CNN_Output_Layer = tf.nn.softmax(tf.matmul(D_Hidden, W3) + b3)
 
-# model.add(Flatten())
-# model.add(Dense(101, activation='softmax'))
+with tf.name_scope('Output_Layer'):
+    CNN_Output = tf.placeholder('float', shape=[100], name='y_label')
+    W4 = weight([100, 101])
+    b4 = bias([101])
+    y_predict = tf.nn.softmax(tf.matmul(CNN_Output_Layer, W4) + b4)
 
-# model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+with tf.name_scope('optimizer'):
+    y_label = tf.placeholder("float", shape=[None, 101], name='y_label')
+    loss_function = tf.reduce_mean(tf.nn.softmax_cross_entropy_logits(logits=y_predict, labels=y_label))
+    optimizer = tf.train.AdamOptimizer(0.0001).minimize(loss_function)
+    
+with tf.name_scope('evaluate_model'):
+    correct_prediction = tf.equal(tf.argmax(y_predict, 1), tf.argmax(y_label, 1))
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, 'float'))
 
-# try:
-#     model.load_weights("SaveModel/UCF101CNNModel.h5")
-#     print("Model loaded successfully! Continuing training model")
-# except:
-#     print("Failed to load model! Start training a new model")
-
-# print(model.summary())
-
-# train_history = model.fit_generator(train_generator, steps_per_epoch=5500, validation_data=validation_generator, validation_steps=10, epochs=10)
-
-# model.save_weights("SaveModel/cifarCnnModel.h5")
-# print("Saved model to disk")
+with tf.Session() as sess:
+    sess.run(tf.global_variables_initializer())
+    for i in range(100):
+        image_y, image_x = load_data_batch(data, all_labels, i * 50, 50)
+        output = sess.run(CNN_Output, feed_dict={x: image_x})
