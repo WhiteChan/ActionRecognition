@@ -78,7 +78,7 @@ with tf.name_scope('CNN_Output_Layer'):
     CNN_Output_Layer = tf.nn.softmax(tf.matmul(D_Hidden, W3) + b3)
 
 with tf.name_scope('Output_Layer'):
-    CNN_Output = tf.placeholder('float', shape=[None, 100], name='y_label')
+    CNN_Output = tf.placeholder('float', shape=[None, 100], name='CNN_Output')
     W4 = weight([100, 101])
     b4 = bias([101])
     y_predict = tf.nn.softmax(tf.matmul(CNN_Output, W4) + b4)
@@ -96,4 +96,8 @@ with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     for i in range(10):
         image_y, image_x = load_data_batch(data, all_labels, i * 50, 50)
-        output = sess.run(CNN_Output, feed_dict={x: image_x[i]})
+        batch_output = []
+        for j in range(50):
+            output = sess.run(CNN_Output_Layer, feed_dict={x: image_x[j]})
+            batch_output.append(output)
+        acc = sess.run(accuracy, feed_dict={CNN_Output: batch_output, y_label: image_y})
