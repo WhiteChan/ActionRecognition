@@ -93,7 +93,7 @@ with tf.name_scope('evaluate_model'):
 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
-    for epoch in range(20):
+    for epoch in range(10):
         for i in range(199):
             image_y, image_x = load_data_batch(data, all_labels, i * 50, 50)
             image_x = image_x / 255.
@@ -104,3 +104,5 @@ with tf.Session() as sess:
             loss, acc = sess.run([loss_function, accuracy], feed_dict={CNN_Output: batch_output, y_label: image_y})
             print('Batch ', i, ',loss = ', loss, ', acc = ', acc)
         print('Epoch ', epoch)
+    merged = tf.summary.merge_all()
+    train_writer = tf.summary.FileWriter('log/temp', sess.graph)
