@@ -101,3 +101,4 @@ with tf.Session() as sess:
             output = sess.run(CNN_Output_Layer, feed_dict={x: image_x[j]})
             batch_output.append(output)
         acc = sess.run(accuracy, feed_dict={CNN_Output: batch_output, y_label: image_y})
+        print('acc = ', acc)
